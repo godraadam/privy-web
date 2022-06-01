@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { KeyboardEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PrivyContact } from "../models/privyContact";
 import { PrivyMessage } from "../models/privyMessage";
@@ -10,7 +10,7 @@ export default function Messages({ user }: any) {
   const [newContactAlias, setNewContactAlias] = useState("");
   const [newContactPubKey, setNewContactPubKey] = useState("");
   const [showContactForm, setShowContactForm] = useState(false);
-  const [messages, setMessages] = useState<Array<String>>([]);
+  const [messages, setMessages] = useState<Array<PrivyMessage>>([]);
   const [selectedContactIndex, setSelectedContactIndex] = useState(-1);
   const [message, setMessage] = useState("");
 
@@ -36,7 +36,7 @@ export default function Messages({ user }: any) {
     switch (res.status) {
       case 200:
         const msgs = res.data as PrivyMessage[];
-        setMessages(msgs.map((msg) => msg.content));
+        setMessages(msgs);
         console.log(messages);
         break;
     }
@@ -66,21 +66,27 @@ export default function Messages({ user }: any) {
         break;
     }
   }
-  
+
+  const handleKeypress = (e: KeyboardEvent) => {
+    if (e.code === "Enter") {
+      onSend();
+    }
+  };
+
   async function onSend() {
     setMessage("");
     try {
       const res = await axios.post(`${routerApiUrl}/message/send`, {
         recipient_alias: contacts[selectedContactIndex].alias,
-        message: message
+        message: message,
       });
-      switch(res.status) {
+      switch (res.status) {
         case 200:
           console.log("Message sent!");
           await showMessagesForSelectedContact(selectedContactIndex);
           break;
       }
-    } catch(error) {
+    } catch (error) {
       console.log(error);
     }
   }
@@ -98,7 +104,7 @@ export default function Messages({ user }: any) {
           Add contact
         </button>
         {showContactForm && (
-          <div className="w-full max-w-xs p-2">
+          <div className="w-full max-w-xs p-2 space-y-1 ">
             <input
               type="text"
               className="input input-bordered input-white w-full max-w-xs"
@@ -146,7 +152,7 @@ export default function Messages({ user }: any) {
               );
             })
           ) : (
-            <div className="mx-auto py-5 text-xl">
+            <div className="mx-auto py-5 text-sm">
               No contacts found locally. Try adding a new one!
             </div>
           )}
@@ -161,9 +167,37 @@ export default function Messages({ user }: any) {
       ) : (
         <div className="flex flex-grow flex-col">
           <div className="flex flex-grow flex-col space-y-2 p-20 bg-base-200">
-            <ul>
+            <ul className="space-y-1">
               {messages.map((msg, index) => {
-                return <li key={index}>{msg}</li>;
+                return (
+                  <li key={index}>
+                    {msg.from == contacts[selectedContactIndex].alias ? (
+                      <div className="flex flex-row space-x-2 justify-start">
+                        <div className="w-fit bg-stone-700 p-3 rounded-xl text-sm text-white">
+                          {msg.content}
+                        </div>
+
+                        <div className="text-xs text-stone-400">
+                          {new Date(
+                            parseInt(msg.timestamp)
+                          ).toLocaleTimeString()}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-row space-x-2 justify-end">
+                        <div className="w-fit bg-stone-700 p-3 rounded-xl text-sm text-white">
+                          {msg.content}
+                        </div>
+
+                        <div className="text-xs text-stone-400">
+                          {new Date(
+                            parseInt(msg.timestamp)
+                          ).toLocaleTimeString()}
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                );
               })}
             </ul>
           </div>
@@ -173,10 +207,17 @@ export default function Messages({ user }: any) {
               placeholder="Type your message"
               className="input input-bordered w-2/3"
               value={message}
-              onInput={(e) =>
-                setMessage((e.target as HTMLInputElement).value ?? "")}
+              onChange={(e) =>
+                setMessage((e.target as HTMLInputElement).value ?? "")
+              }
+              onKeyUp={handleKeypress}
             />
-            <button className="btn btn-md btn-wide btn-active btn-ghost" onClick={onSend}>Send</button>
+            <button
+              className="btn btn-md btn-wide btn-active btn-ghost"
+              onClick={onSend}
+            >
+              Send
+            </button>
           </div>
         </div>
       )}

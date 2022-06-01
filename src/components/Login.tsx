@@ -153,7 +153,7 @@ export default function Login() {
             );
           })
         ) : (
-          <div className="mx-auto py-5 text-xl">
+          <div className="mx-auto py-5 text-md">
             No accounts found locally. Create or import one!
           </div>
         )}
@@ -178,7 +178,7 @@ export default function Login() {
           value={password}
         />
         <div className="flex justify-center space-x-2">
-          {localUsers.length > 0 ? (
+          {localUsers.map(user => user.username).includes(username) ? (
             <button
               className="btn hover:bg-white text-black bg-green-400"
               disabled={!(username.length > 0 && password.length > 0)}
@@ -189,20 +189,26 @@ export default function Login() {
           ) : (
             <></>
           )}
-          <button
-            className="btn hover:bg-white text-black bg-stone-400"
-            disabled={!(username.length > 0 && password.length > 0)}
-            onClick={onAddAccount}
-          >
-            Import account
-          </button>
-          <button
-            className="btn hover:bg-white text-black bg-stone-400"
-            disabled={!(username.length > 0 && password.length > 0)}
-            onClick={onCreateAccount}
-          >
-            Create account
-          </button>
+          {!localUsers.map(user => user.username).includes(username) ? (
+            <>
+              <button
+                className="btn hover:bg-white text-black bg-stone-400"
+                disabled={!(username.length > 0 && password.length > 0)}
+                onClick={onAddAccount}
+              >
+                Import account
+              </button>
+              <button
+                className="btn hover:bg-white text-black bg-stone-400"
+                disabled={!(username.length > 0 && password.length > 0)}
+                onClick={onCreateAccount}
+              >
+                Create account
+              </button>
+            </>
+          ) : (
+            <></>
+          )}
         </div>
         <div
           className="alert alert-success shadow-lg "
