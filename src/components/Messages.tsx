@@ -27,8 +27,12 @@ export default function Messages({ user }: any) {
         pubkey: newContactPubKey,
         trusted: false,
       });
-      console.log(res);
+      switch (res.status) {
+        
+      }
       await fetchContacts();
+      setNewContactAlias("");
+      setNewContactPubKey("");
     } catch (error) {}
   }
 
@@ -42,7 +46,7 @@ export default function Messages({ user }: any) {
           Add contact
         </button>
         {showContactForm && (
-          <>
+          <div className="p-2">
             <input
               type="text"
               className="input input-bordered input-white w-full max-w-xs"
@@ -73,7 +77,7 @@ export default function Messages({ user }: any) {
             >
               Save
             </button>
-          </>
+          </div>
         )}
         <ul className="space-y-2">{
         contacts.length > 0 ? (

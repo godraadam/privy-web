@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { routerApiUrl } from "../store";
 import { useNavigate } from "react-router-dom";
+import Footer from "./Footer";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -10,12 +11,19 @@ export default function Login() {
   const [showSuccessAccount, setShowSuccessAccount] = useState(false);
   const [showErrorAccount, setShowErrorAccount] = useState(false);
   const [accountStateMessage, setAccountStateMessage] = useState("");
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    (async () => await fetchAccounts())();
-  }, []);
+    (async () => {
+      const res = await axios.get(`${routerApiUrl}/auth/whoami`);
+      if (res.status === 200) {
+        // someone already logged in, redirect
+        navigate("/messages");
+      }
+      await fetchAccounts();
+    })();
+  }, [navigate]);
 
   async function fetchAccounts() {
     const res = await axios.get(`${routerApiUrl}/account/ls`);
@@ -29,20 +37,25 @@ export default function Login() {
 
   async function onLogin() {
     try {
-      const res = await axios.post(`${routerApiUrl}/auth/login`, {username: username, password:password});
+      const res = await axios.post(`${routerApiUrl}/auth/login`, {
+        username: username,
+        password: password,
+      });
       switch (res.status) {
         case 200:
           displaySuccess(`Logged in as ${username}!`);
-          localStorage.setItem('username', username);
+          localStorage.setItem("username", username);
           navigate("/messages");
           break;
         case 404:
-          displayError(`No such user found: ${username}! Try importing it first!`)
+          displayError(
+            `No such user found: ${username}! Try importing it first!`
+          );
           break;
         default:
           displayError("Something went wrong, try again later!");
       }
-    } catch(error) {
+    } catch (error) {
       displayError("Something went wrong, try again later!");
     }
   }
@@ -95,7 +108,7 @@ export default function Login() {
     setShowErrorAccount(true);
     setAccountStateMessage(error);
   }
-  
+
   function displaySuccess(msg: string) {
     setShowSuccessAccount(true);
     setShowErrorAccount(false);
@@ -103,8 +116,8 @@ export default function Login() {
   }
 
   return (
-    <div className="">
-      <div className="navbar bg-stone-400">
+    <div className="flex flex-col min-h-screen">
+      <div className="navbar bg-base-200">
         <a className="btn btn-active btn-neutral normal-case text-xl">privy</a>
       </div>
       <div className="flex justify-center space-x-3 pt-20">
@@ -113,7 +126,10 @@ export default function Login() {
             return (
               <div className="avatar placeholder" key={index}>
                 <div className="bg-stone-200 text-black rounded-full w-24">
-                  <button className="text-3xl" onClick={() => onAccountSelected(index)}>
+                  <button
+                    className="text-3xl"
+                    onClick={() => onAccountSelected(index)}
+                  >
                     {user.username[0]}
                   </button>
                 </div>
@@ -126,10 +142,10 @@ export default function Login() {
           </div>
         )}
       </div>
-      <div className="form-control w-full max-w-xs p-10 space-y-5 mx-auto">
+      <div className="form-control flex-grow w-full max-w-md p-10 space-y-5 mx-auto">
         <input
           type="text"
-          className="input input-bordered input-white w-full max-w-xs"
+          className="input input-bordered input-white w-full max-w-md"
           placeholder="Username"
           onInput={(e) =>
             setUsername((e.target as HTMLInputElement).value ?? "")
@@ -138,14 +154,14 @@ export default function Login() {
         />
         <input
           type="password"
-          className="input input-bordered input-white w-full max-w-xs"
+          className="input input-bordered input-white w-full max-w-md"
           placeholder="Password"
           onInput={(e) =>
             setPassword((e.target as HTMLInputElement).value ?? "")
           }
           value={password}
         />
-        <div className="flex justify-center">
+        <div className="flex justify-center space-x-2">
           {localUsers.length > 0 ? (
             <button
               className="btn hover:bg-white text-black bg-green-400"
@@ -215,6 +231,7 @@ export default function Login() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
