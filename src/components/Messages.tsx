@@ -1,6 +1,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PrivyContact } from "../models/privyContact";
+import { PrivyMessage } from "../models/privyMessage";
 import { routerApiUrl } from "../store";
 
 export default function Messages({ user }: any) {
@@ -8,6 +10,11 @@ export default function Messages({ user }: any) {
   const [newContactAlias, setNewContactAlias] = useState("");
   const [newContactPubKey, setNewContactPubKey] = useState("");
   const [showContactForm, setShowContactForm] = useState(false);
+  const [messages, setMessages] = useState<Array<String>>([]);
+  const [selectedContactIndex, setSelectedContactIndex] = useState(-1);
+  const [message, setMessage] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     (async () => fetchContacts())();
@@ -20,6 +27,21 @@ export default function Messages({ user }: any) {
     } catch (error) {}
   }
 
+  async function showMessagesForSelectedContact(index: number) {
+    setSelectedContactIndex(index);
+    const contact = contacts[index];
+    const res = await axios.get(
+      `${routerApiUrl}/message/with/${contact.alias}`
+    );
+    switch (res.status) {
+      case 200:
+        const msgs = res.data as PrivyMessage[];
+        setMessages(msgs.map((msg) => msg.content));
+        console.log(messages);
+        break;
+    }
+  }
+
   async function onAddNewContact() {
     try {
       const res = await axios.post(`${routerApiUrl}/contact/add`, {
@@ -28,7 +50,6 @@ export default function Messages({ user }: any) {
         trusted: false,
       });
       switch (res.status) {
-        
       }
       await fetchContacts();
       setNewContactAlias("");
@@ -36,9 +57,40 @@ export default function Messages({ user }: any) {
     } catch (error) {}
   }
 
+  async function onLogout() {
+    // send logout request to router
+    const res = await axios.post(`${routerApiUrl}/auth/logout`);
+    switch (res.status) {
+      case 200:
+        navigate("/login");
+        break;
+    }
+  }
+  
+  async function onSend() {
+    setMessage("");
+    try {
+      const res = await axios.post(`${routerApiUrl}/message/send`, {
+        recipient_alias: contacts[selectedContactIndex].alias,
+        message: message
+      });
+      switch(res.status) {
+        case 200:
+          console.log("Message sent!");
+          await showMessagesForSelectedContact(selectedContactIndex);
+          break;
+      }
+    } catch(error) {
+      console.log(error);
+    }
+  }
+
   return (
-    <div className="flex">
-      <div className="flex flex-col space-y-2 p-20">
+    <div className="flex flex-row min-h-screen">
+      <div className="flex flex-col min-w-lg space-y-2 p-20 bg-stone-900">
+        <button className="btn btn-ghost w-full max-w-xs" onClick={onLogout}>
+          Logout
+        </button>
         <button
           className="btn btn-ghost w-full max-w-xs"
           onClick={() => setShowContactForm(!showContactForm)}
@@ -46,7 +98,7 @@ export default function Messages({ user }: any) {
           Add contact
         </button>
         {showContactForm && (
-          <div className="p-2">
+          <div className="w-full max-w-xs p-2">
             <input
               type="text"
               className="input input-bordered input-white w-full max-w-xs"
@@ -66,11 +118,11 @@ export default function Messages({ user }: any) {
               value={newContactPubKey}
             />
             <div className="form-control w-full max-w-xs">
-            <label className="label cursor-pointer">
-              <span className="label-text">Trusted contact</span> 
-              <input type="checkbox" className="toggle" />
-            </label>
-          </div>
+              <label className="label cursor-pointer">
+                <span className="label-text">Trusted contact</span>
+                <input type="checkbox" className="toggle" />
+              </label>
+            </div>
             <button
               className="btn btn-primary w-full max-w-xs"
               onClick={onAddNewContact}
@@ -79,20 +131,55 @@ export default function Messages({ user }: any) {
             </button>
           </div>
         )}
-        <ul className="space-y-2">{
-        contacts.length > 0 ? (
-          contacts.map((contact, index) => {
-            return (
-              <li className="bg-stone-600 w-full rounded-full px-10 py-1">{contact.alias}</li>
-            );
-          })
-        ) : (
-          <div className="mx-auto py-5 text-xl">
-            No contacts found locally. Try adding a new one!
-          </div>
-        )}
+        {/* contacts */}
+        <ul className="space-y-2">
+          {contacts.length > 0 ? (
+            contacts.map((contact, index) => {
+              return (
+                <li
+                  className="bg-stone-600 w-full rounded-full px-10 py-1"
+                  onClick={() => showMessagesForSelectedContact(index)}
+                  key={index}
+                >
+                  {contact.alias}
+                </li>
+              );
+            })
+          ) : (
+            <div className="mx-auto py-5 text-xl">
+              No contacts found locally. Try adding a new one!
+            </div>
+          )}
         </ul>
       </div>
+      <div className="divider divider-horizontal"></div>
+      {/* messages */}
+      {selectedContactIndex < 0 ? (
+        <div className="flex flex-col flex-grow items-center justify-center">
+          <img src="/privy-logo.png" alt="Image not found" />
+        </div>
+      ) : (
+        <div className="flex flex-grow flex-col">
+          <div className="flex flex-grow flex-col space-y-2 p-20 bg-base-200">
+            <ul>
+              {messages.map((msg, index) => {
+                return <li key={index}>{msg}</li>;
+              })}
+            </ul>
+          </div>
+          <div className="flex flex-row space-x-2 px-10 py-5 justify-center">
+            <input
+              type="text"
+              placeholder="Type your message"
+              className="input input-bordered w-2/3"
+              value={message}
+              onInput={(e) =>
+                setMessage((e.target as HTMLInputElement).value ?? "")}
+            />
+            <button className="btn btn-md btn-wide btn-active btn-ghost" onClick={onSend}>Send</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

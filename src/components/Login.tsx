@@ -3,6 +3,7 @@ import axios from "axios";
 import { routerApiUrl } from "../store";
 import { useNavigate } from "react-router-dom";
 import Footer from "./Footer";
+import Navbar from "./Navbar";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -16,18 +17,31 @@ export default function Login() {
 
   useEffect(() => {
     (async () => {
-      const res = await axios.get(`${routerApiUrl}/auth/whoami`);
+      const res = await axios.get(`${routerApiUrl}/auth/whoami`, {
+        validateStatus: (status) => true,
+      });
       if (res.status === 200) {
         // someone already logged in, redirect
         navigate("/messages");
+      } else if (res.status === 404) {
+        await fetchAccounts();
       }
-      await fetchAccounts();
     })();
   }, [navigate]);
 
   async function fetchAccounts() {
-    const res = await axios.get(`${routerApiUrl}/account/ls`);
-    setLocalUsers(res.data);
+    try {
+      const res = await axios.get(`${routerApiUrl}/account/ls`);
+      switch (res.status) {
+        case 200:
+          setLocalUsers(res.data);
+          break;
+        default:
+          console.log(res.status);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async function onAccountSelected(index: number) {
@@ -69,6 +83,8 @@ export default function Login() {
       switch (res.status) {
         case 200:
           displaySuccess("Account has been imported successfully!");
+          setUsername("");
+          setPassword("");
           await fetchAccounts();
           break;
         default:
@@ -88,6 +104,8 @@ export default function Login() {
       switch (res.status) {
         case 200:
           displaySuccess("Account has been created successfully!");
+          setUsername("");
+          setPassword("");
           await fetchAccounts();
           break;
         case 409:
@@ -116,10 +134,8 @@ export default function Login() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="navbar bg-base-200">
-        <a className="btn btn-active btn-neutral normal-case text-xl">privy</a>
-      </div>
+    <div className="flex flex-col bg-black min-h-screen">
+      <Navbar />
       <div className="flex justify-center space-x-3 pt-20">
         {localUsers.length > 0 ? (
           localUsers.map((user, index) => {
