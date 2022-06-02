@@ -58,7 +58,7 @@ export default function Login() {
       const res = await axios.post(`${routerApiUrl}/auth/login`, {
         username: username,
         password: password,
-      });
+      }, {validateStatus: (status) => true});
       switch (res.status) {
         case 200:
           displaySuccess(`Logged in as ${username}!`);
@@ -68,6 +68,12 @@ export default function Login() {
         case 404:
           displayError(
             `No such user found: ${username}! Try importing it first!`
+          );
+          break;
+        case 401:
+          setPassword("");
+          displayError(
+            `The password does not match!`
           );
           break;
         default:
@@ -140,6 +146,11 @@ export default function Login() {
     setAccountStateMessage(msg);
     setTimeout(() => setShowSuccessAccount(false), 3000);
   }
+  
+  function validatePassword() {
+    const passwordRegEx = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$/
+    return !!password.match(passwordRegEx);
+  }
 
   return (
     <div className="flex flex-col bg-black min-h-screen">
@@ -180,6 +191,7 @@ export default function Login() {
           type="password"
           className="input input-bordered input-white w-full max-w-md"
           placeholder="Password"
+          title="At least one capital letter, at least one digit, minimum 8 characters"
           onInput={(e) =>
             setPassword((e.target as HTMLInputElement).value ?? "")
           }
@@ -203,7 +215,7 @@ export default function Login() {
               <button
                 className="btn hover:bg-white text-black bg-stone-400"
                 disabled={
-                  !(username.length > 0 && password.length > 0) ||
+                  !(username.length > 0 && validatePassword()) ||
                   promiseInProgress
                 }
                 onClick={onAddAccount}
@@ -213,7 +225,7 @@ export default function Login() {
               <button
                 className="btn hover:bg-white text-black bg-stone-400"
                 disabled={
-                  !(username.length > 0 && password.length > 0) ||
+                  !(username.length > 0 && validatePassword()) ||
                   promiseInProgress
                 }
                 onClick={onCreateAccount}

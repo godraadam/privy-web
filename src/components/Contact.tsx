@@ -9,6 +9,7 @@ interface ContactProps {
 
 export default function Contact(props: ContactProps) {
   const navigate = useNavigate();
+  
 
   function onShowProfile() {
     navigate(
