@@ -1,68 +1,66 @@
 import axios from "axios";
-import { KeyboardEvent, useEffect, useState } from "react";
+import { KeyboardEvent, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PrivyContact } from "../models/privyContact";
 import { PrivyMessage } from "../models/privyMessage";
 import { routerApiUrl } from "../store";
-import { BarLoader } from "react-spinners";
-import Contact from "./Contact";
+import Contacts from "./Contacts";
+import IncomingMessage from "./IncomingMessage";
+import OutgoingMessage from "./OutgoingMessage";
 
 export default function Messages() {
-  const [contacts, setContacts] = useState<Array<PrivyContact>>([]);
-  const [newContactAlias, setNewContactAlias] = useState("");
-  const [newContactPubKey, setNewContactPubKey] = useState("");
-  const [showContactForm, setShowContactForm] = useState(false);
   const [messages, setMessages] = useState<Array<PrivyMessage>>([]);
-  const [selectedContactIndex, setSelectedContactIndex] = useState(-1);
   const [message, setMessage] = useState("");
   const [userName, setUserName] = useState("");
   const [pubKey, setPubKey] = useState("");
+  const [selectedContact, setSelectedContact] = useState<PrivyContact | null>(
+    null
+  );
+  
+  const messagesEndRef = useRef(null);
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    (async () => fetchContacts())();
-  }, []);
-
-  async function fetchContacts() {
-    try {
-      // fetch self
-      let res = await axios.get(`${routerApiUrl}/auth/whoami`);
-      setUserName(res.data.username);
-      setPubKey(res.data.pubkey);
-      res = await axios.get(`${routerApiUrl}/contact/ls`);
-      setContacts(res.data as Array<PrivyContact>);
-    } catch (error) {}
+  
+  const scrollToBottom = () => {
+    if(!messagesEndRef) {
+      return;
+    }
+    if (!messagesEndRef.current) {
+      return;
+    }
+    // @ts-ignore
+    messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
   }
 
-  async function showMessagesForSelectedContact(index: number) {
-    setSelectedContactIndex(index);
-    const contact = contacts[index];
+  useEffect(scrollToBottom, [messages]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        // fetch self
+        let res = await axios.get(`${routerApiUrl}/auth/whoami`);
+        setUserName(res.data.username);
+        setPubKey(res.data.pubkey);
+      } catch (error) {
+        navigate("/login");
+      }
+      await fetchMessagesWithSelectedAccount();
+    })();
+  }, [selectedContact]);
+  
+  async function fetchMessagesWithSelectedAccount() {
+    if (!selectedContact) {
+      return;
+    }
     const res = await axios.get(
-      `${routerApiUrl}/message/with/${contact.alias}`
+      `${routerApiUrl}/message/with/${selectedContact.alias}`
     );
     switch (res.status) {
       case 200:
         const msgs = res.data as PrivyMessage[];
         setMessages(msgs);
-        console.log(messages);
         break;
     }
-  }
-
-  async function onAddNewContact() {
-    try {
-      const res = await axios.post(`${routerApiUrl}/contact/add`, {
-        alias: newContactAlias,
-        pubkey: newContactPubKey,
-        trusted: false,
-      });
-      switch (res.status) {
-      }
-      await fetchContacts();
-      setNewContactAlias("");
-      setNewContactPubKey("");
-    } catch (error) {}
   }
 
   async function onLogout() {
@@ -82,20 +80,23 @@ export default function Messages() {
   };
 
   async function onSend() {
-    if (message == "") {
+    if (message === "") {
       // don't send empty message
+      return;
+    }
+    if(!selectedContact) {
       return;
     }
     setMessage("");
     try {
       const res = await axios.post(`${routerApiUrl}/message/send`, {
-        recipient_alias: contacts[selectedContactIndex].alias,
+        recipient_alias: selectedContact.alias,
         message: message,
       });
       switch (res.status) {
         case 200:
-          console.log("Message sent!");
-          await showMessagesForSelectedContact(selectedContactIndex);
+          console.log(`Message sent to ${selectedContact?.alias}!`);
+          fetchMessagesWithSelectedAccount();
           break;
       }
     } catch (error) {
@@ -104,7 +105,8 @@ export default function Messages() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-screen">
+      {/* navbar*/}
       <div className="navbar flex flex-row min-w-screen border-stone-600 border-b">
         <h1 className="text-2xl mx-auto font-bold">Privy</h1>
         <div className="bg-base-100 justify-end my-2">
@@ -144,7 +146,7 @@ export default function Messages() {
               <li>
                 <button
                   onClick={(e) =>
-                    navigate(`/profile/?username=${userName}&pubkey=${pubKey}`)
+                    navigate(`/profile/?username=${userName}&pubkey=${encodeURIComponent(pubKey)}`)
                   }
                 >
                   <svg
@@ -164,121 +166,32 @@ export default function Messages() {
           </div>
         </div>
       </div>
-      <div className="flex flex-row flex-grow">
-        <div className="flex flex-col max-w-md space-y-2 px-6 w-full pt-5 bg-base-200 border-stone-600 border-r">
-          <button
-            className="flex flex-row justify-center gap-3 border border-stone-500 rounded-full py-3 max-w-md hover:bg-stone-500 text-normal"
-            onClick={() => setShowContactForm(!showContactForm)}
-          >
-            Add contact
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="white"
-            >
-              <path d="M8.602 3.7c-1.154 1.937-.635 5.227 1.424 9.025.93 1.712.697 3.02.338 3.815-.982 2.178-3.675 2.799-6.525 3.456-1.964.454-1.839.87-1.839 4.004h-1.995l-.005-1.241c0-2.52.199-3.975 3.178-4.663 3.365-.777 6.688-1.473 5.09-4.418-4.733-8.729-1.35-13.678 3.732-13.678 3.321 0 5.97 2.117 5.97 6.167 0 3.555-1.949 6.833-2.383 7.833h-2.115c.392-1.536 2.499-4.366 2.499-7.842 0-5.153-5.867-4.985-7.369-2.458zm15.398 15.8c0 2.485-2.017 4.5-4.5 4.5s-4.5-2.015-4.5-4.5 2.017-4.5 4.5-4.5 4.5 2.015 4.5 4.5zm-2-.5h-2v-2h-1v2h-2v1h2v2h1v-2h2v-1z" />
-            </svg>
-          </button>
-          {showContactForm && (
-            <div className="w-full max-w-md p-2 space-y-2 ">
-              <input
-                type="text"
-                className="input input-bordered input-white w-full max-w-md"
-                placeholder="Alias"
-                onInput={(e) =>
-                  setNewContactAlias((e.target as HTMLInputElement).value ?? "")
-                }
-                value={newContactAlias}
-              />
-              <input
-                type="text"
-                className="input input-bordered input-white w-full max-w-md"
-                placeholder="Public key"
-                onInput={(e) =>
-                  setNewContactPubKey(
-                    (e.target as HTMLInputElement).value ?? ""
-                  )
-                }
-                value={newContactPubKey}
-              />
-              <div className="form-control w-full max-w-md">
-                <label className="label cursor-pointer">
-                  <span className="label-text">Trusted contact</span>
-                  <input type="checkbox" className="toggle" />
-                </label>
-              </div>
-              <button
-                className="btn btn-primary w-full max-w-md"
-                onClick={onAddNewContact}
-              >
-                Save
-              </button>
-            </div>
-          )}
-          {/* contacts */}
-          <div className="divider"></div>
-          <h1 className="text-xl font-bold">Contacts</h1>
-          <ul className="space-y-2">
-            {contacts.length > 0 ? (
-              contacts.map((contact, index) => {
-                return (
-                  <Contact
-                    index={index}
-                    contact={contact}
-                    f={showMessagesForSelectedContact}
-                  />
-                );
-              })
-            ) : (
-              <div className="mx-auto py-5 text-sm">
-                No contacts found locally. Try adding a new one!
-              </div>
-            )}
-          </ul>
-        </div>
-        {/* messages */}
-        {selectedContactIndex < 0 ? (
-          <div className="flex flex-col flex-grow items-center justify-center">
+      <div className="flex flex-row" style={{minHeight:"90%"}}>
+        <Contacts
+          setSelectedContact={setSelectedContact}
+        />
+      {/* messages */}
+        {!selectedContact ? (
+          <div className="flex mx-auto items-center">
             <img src="/privy-logo.png" alt="Image not found" />
           </div>
         ) : (
-          <div className="flex flex-grow flex-col border-l-white border-1">
-            <div className="flex flex-grow flex-col space-y-2 p-20 bg-stone-900">
-              <ul className="space-y-1">
-                {messages.map((msg, index) => {
-                  return (
-                    <li key={index}>
-                      {msg.from == contacts[selectedContactIndex].alias ? (
-                        <div className="flex flex-row space-x-2 justify-start items-center">
-                          <div className="w-fit bg-stone-800 p-3 rounded-xl text-sm text-white">
-                            {msg.content}
-                          </div>
-
-                          <div className="text-xs text-stone-400">
-                            {new Date(
-                              parseInt(msg.timestamp)
-                            ).toLocaleTimeString()}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex flex-row space-x-2 justify-end items-center">
-                          <div className="text-xs text-stone-400">
-                            {new Date(
-                              parseInt(msg.timestamp)
-                            ).toLocaleTimeString()}
-                          </div>
-                          <div className="w-fit bg-stone-500 p-3 rounded-xl text-sm text-white">
-                            {msg.content}
-                          </div>
-                        </div>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+          <div className="flex flex-col flex-grow overflow-y-scroll" ref={messagesEndRef}>
+            <div className="flex flex-col border-l-white border-1 pt-20 px-10 bg-stone-900 ">
+                <ul className="space-y-2">
+                  {messages.map((msg, index) => {
+                    return (
+                      <li key={index}>
+                        {msg.from == selectedContact?.alias ? (
+                          <IncomingMessage message={msg} />
+                        ) : (
+                          <OutgoingMessage message={msg} />
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             <div className="flex flex-row space-x-2 px-10 py-5 justify-center">
               <input
                 type="text"
@@ -314,7 +227,7 @@ export default function Messages() {
             </div>
           </div>
         )}
-      </div>
+        </div>  
     </div>
   );
 }

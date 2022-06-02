@@ -4,7 +4,7 @@ import { PrivyContact } from "../models/privyContact";
 interface ContactProps {
   index: number;
   contact: PrivyContact;
-  f: (index: number) => void;
+  onClick: () => void;
 }
 
 export default function Contact(props: ContactProps) {
@@ -12,14 +12,14 @@ export default function Contact(props: ContactProps) {
 
   function onShowProfile() {
     navigate(
-      `/profile/?username=${props.contact.alias}&pubkey=${props.contact.pubkey}`
+      `/profile/?username=${props.contact.alias}&pubkey=${encodeURIComponent(props.contact.pubkey)}`
     );
   }
 
   return (
     <li
       className=" w-full max-w-md"
-      onClick={() => props.f(props.index)}
+      onClick={props.onClick}
       key={props.index}
     >
       <div className="flex flex-row gap-3 justify-between items-center hover:bg-stone-600 rounded-full px-4 py-2">
