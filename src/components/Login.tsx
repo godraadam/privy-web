@@ -4,6 +4,9 @@ import { routerApiUrl } from "../store";
 import { useNavigate } from "react-router-dom";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
+import { trackPromise } from "react-promise-tracker";
+import LoadingIndicator from "./LoadingIndicator";
+import { usePromiseTracker } from "react-promise-tracker";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -14,6 +17,7 @@ export default function Login() {
   const [accountStateMessage, setAccountStateMessage] = useState("");
 
   const navigate = useNavigate();
+  const { promiseInProgress } = usePromiseTracker();
 
   useEffect(() => {
     (async () => {
@@ -97,10 +101,12 @@ export default function Login() {
 
   async function onCreateAccount() {
     try {
-      const res = await axios.post(`${routerApiUrl}/account/create`, {
-        username: username,
-        password: password,
-      });
+      const res = await trackPromise(
+        axios.post(`${routerApiUrl}/account/create`, {
+          username: username,
+          password: password,
+        })
+      );
       switch (res.status) {
         case 200:
           displaySuccess("Account has been created successfully!");
@@ -125,12 +131,14 @@ export default function Login() {
     setShowSuccessAccount(false);
     setShowErrorAccount(true);
     setAccountStateMessage(error);
+    setTimeout(() => setShowErrorAccount(false), 3000);
   }
 
   function displaySuccess(msg: string) {
     setShowSuccessAccount(true);
     setShowErrorAccount(false);
     setAccountStateMessage(msg);
+    setTimeout(() => setShowSuccessAccount(false), 3000);
   }
 
   return (
@@ -177,8 +185,9 @@ export default function Login() {
           }
           value={password}
         />
+        <LoadingIndicator />
         <div className="flex justify-center space-x-2">
-          {localUsers.map(user => user.username).includes(username) ? (
+          {localUsers.map((user) => user.username).includes(username) ? (
             <button
               className="btn hover:bg-white text-black bg-green-400"
               disabled={!(username.length > 0 && password.length > 0)}
@@ -189,18 +198,24 @@ export default function Login() {
           ) : (
             <></>
           )}
-          {!localUsers.map(user => user.username).includes(username) ? (
+          {!localUsers.map((user) => user.username).includes(username) ? (
             <>
               <button
                 className="btn hover:bg-white text-black bg-stone-400"
-                disabled={!(username.length > 0 && password.length > 0)}
+                disabled={
+                  !(username.length > 0 && password.length > 0) ||
+                  promiseInProgress
+                }
                 onClick={onAddAccount}
               >
                 Import account
               </button>
               <button
                 className="btn hover:bg-white text-black bg-stone-400"
-                disabled={!(username.length > 0 && password.length > 0)}
+                disabled={
+                  !(username.length > 0 && password.length > 0) ||
+                  promiseInProgress
+                }
                 onClick={onCreateAccount}
               >
                 Create account
