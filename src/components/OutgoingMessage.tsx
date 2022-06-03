@@ -6,7 +6,6 @@ interface MessageProps {
 }
 
 export default function OutgoingMessage(props: MessageProps) {
-  useEffect(() => console.log(props.message.delivered));
 
   return (
     <div className="flex flex-row space-x-2 justify-end items-center">

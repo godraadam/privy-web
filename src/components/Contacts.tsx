@@ -21,7 +21,9 @@ export default function Contacts(props: ContacsProps) {
     try {
       const res = await axios.get(`${routerApiUrl}/contact/ls`);
       setContacts(res.data as Array<PrivyContact>);
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   return (

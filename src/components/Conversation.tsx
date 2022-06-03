@@ -1,5 +1,5 @@
 import axios from "axios";
-import { KeyboardEvent, useEffect, useState } from "react";
+import { KeyboardEvent, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PrivyContact } from "../models/privyContact";
 import { PrivyMessage } from "../models/privyMessage";
@@ -8,6 +8,7 @@ import IncomingMessage from "./IncomingMessage";
 import OutgoingMessage from "./OutgoingMessage";
 import { trackPromise, usePromiseTracker } from "react-promise-tracker";
 import LoadingIndicator from "./LoadingIndicator";
+import { isEqual } from "lodash";
 
 interface ConversationProps {
   contact: PrivyContact;
@@ -19,18 +20,25 @@ export default function Conversation(props: ConversationProps) {
   const [message, setMessage] = useState("");
 
   const navigate = useNavigate();
-  const promiseInProgress = usePromiseTracker();
+  let messagesEnd = useRef<HTMLElement>(null);
+
+  const scrollToBottom = () => {
+    if (!messagesEnd.current) {
+      return;
+    }
+    messagesEnd.current.scrollIntoView();
+  };
 
   useEffect(() => {
-    let intervalId: NodeJS.Timer;
-
     // fetch messages when mounting
     (async () => {
-      trackPromise(fetchMessagesWithSelectedAccount());
-
-      // then fetch every half a second
-      intervalId = setInterval(fetchMessagesWithSelectedAccount, 2000);
+      await trackPromise(fetchMessagesWithSelectedAccount());
     })();
+
+    // then fetch every half a second
+    const intervalId = setInterval(fetchMessagesWithSelectedAccount, 2000);
+
+    scrollToBottom();
 
     // cleanup
     return () => {
@@ -40,13 +48,17 @@ export default function Conversation(props: ConversationProps) {
 
   async function fetchMessagesWithSelectedAccount() {
     const res = await axios.get(
-      `${routerApiUrl}/message/with/${props.contact.alias}`
+      `${routerApiUrl}/message/with/${props.contact.alias}`,
+      { validateStatus: (status) => true }
     );
     switch (res.status) {
       case 200:
         const msgs = res.data as PrivyMessage[];
         setMessages(msgs);
-        console.log(msgs);
+        break;
+      case 403:
+        // logged out, redirect
+        navigate("/login");
         break;
     }
   }
@@ -59,6 +71,7 @@ export default function Conversation(props: ConversationProps) {
 
     // reset text box
     setMessage("");
+    scrollToBottom();
     try {
       const res = await axios.post(`${routerApiUrl}/message/send`, {
         recipient_alias: props.contact.alias,
@@ -66,8 +79,8 @@ export default function Conversation(props: ConversationProps) {
       });
       switch (res.status) {
         case 200:
-          console.log(`Message sent to ${props.contact?.alias}!`);
-          fetchMessagesWithSelectedAccount();
+          await fetchMessagesWithSelectedAccount();
+
           break;
       }
     } catch (error) {
@@ -84,33 +97,33 @@ export default function Conversation(props: ConversationProps) {
   return (
     <div className="flex flex-col flex-grow">
       <div className="flex flex-row justify-between bg-black border-b border-stone-500">
-          <div className="flex px-5 flex-row items-center text-white gap-5 text-xl font-bold py-3">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="white"
-            >
-              <path d="M0 1v16.981h4v5.019l7-5.019h13v-16.981h-24zm13 12h-8v-1h8v1zm6-3h-14v-1h14v1zm0-3h-14v-1h14v1z" />
-            </svg>
-            <div
-              className="link link-hover"
-              onClick={() =>
-                navigate(
-                  `/profile/?username=${
-                    props.contact.alias
-                  }&pubkey=${encodeURIComponent(
-                    props.contact.pubkey
-                  )}&contact=true&trusted=${props.contact.trusted}`
-                )
-              }
-            >
-              {props.contact.alias}
-            </div>
-            <LoadingIndicator width={200}/>
+        <div className="flex px-5 flex-row items-center text-white gap-5 text-xl font-bold py-3">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="white"
+          >
+            <path d="M0 1v16.981h4v5.019l7-5.019h13v-16.981h-24zm13 12h-8v-1h8v1zm6-3h-14v-1h14v1zm0-3h-14v-1h14v1z" />
+          </svg>
+          <div
+            className="link link-hover"
+            onClick={() =>
+              navigate(
+                `/profile/?username=${
+                  props.contact.alias
+                }&pubkey=${encodeURIComponent(
+                  props.contact.pubkey
+                )}&contact=true&trusted=${props.contact.trusted}`
+              )
+            }
+          >
+            {props.contact.alias}
           </div>
-          
+          <LoadingIndicator width={200} />
+        </div>
+
         <button className="" onClick={props.onQuit}>
           <svg
             clip-rule="evenodd"
@@ -127,7 +140,7 @@ export default function Conversation(props: ConversationProps) {
           </svg>
         </button>
       </div>
-      <div className="flex flex-col flex-grow overflow-y-scroll scroll-smooth bg-gradient-to-b from-black to-zinc-800">
+      <div className="flex flex-col flex-grow scroll-smooth overflow-y-scroll bg-gradient-to-b from-black to-zinc-800">
         <div className="flex flex-col-reverse flex-grow border-1 pt-20 px-10 pb-24">
           {messages.length > 0 ? (
             <ul className="space-y-2">
@@ -142,6 +155,7 @@ export default function Conversation(props: ConversationProps) {
                   </li>
                 );
               })}
+              <div ref={messagesEnd as React.RefObject<HTMLDivElement>}></div>
             </ul>
           ) : (
             <div className="flex flex-grow justify-center items-center">
@@ -151,7 +165,30 @@ export default function Conversation(props: ConversationProps) {
             </div>
           )}
         </div>
-        <div className="flex flex-row space-x-2 px-10 pt-2 pb-5 justify-center sticky bottom-0 bg-zinc-800">
+        <div className="flex flex-row space-x-2 pl-5 pr-10 pt-2 pb-5 justify-center sticky bottom-0 bg-zinc-800">
+          <div className="flex flex-grow justify-start">
+            <button
+              className="border-2 border-stone-600 bg-black btn btn-circle hover:bg-stone-500 -mt-16"
+              onClick={scrollToBottom}
+            >
+              <svg
+                clip-rule="evenodd"
+                fill-rule="evenodd"
+                stroke-linejoin="round"
+                stroke-miterlimit="2"
+                viewBox="0 0 24 24"
+                width={28}
+                height={28}
+                fill="white"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="m2.005 12.002c0-5.517 4.48-9.997 9.997-9.997 5.518 0 9.998 4.48 9.998 9.997 0 5.518-4.48 9.998-9.998 9.998-5.517 0-9.997-4.48-9.997-9.998zm6.21 1.524s1.505 1.501 3.259 3.254c.147.147.338.22.53.22s.384-.073.531-.22c1.753-1.752 3.258-3.254 3.258-3.254.145-.145.217-.335.216-.526 0-.192-.074-.384-.22-.53-.293-.293-.766-.295-1.057-.004l-1.978 1.977v-6.693c0-.414-.336-.75-.75-.75s-.75.336-.75.75v6.693l-1.978-1.978c-.289-.289-.762-.287-1.055.006-.146.147-.22.339-.221.53s.071.38.215.525z"
+                  fill-rule="nonzero"
+                />
+              </svg>
+            </button>
+          </div>
           <input
             type="text"
             placeholder="Type your message"
@@ -163,7 +200,7 @@ export default function Conversation(props: ConversationProps) {
             onKeyUp={handleKeypress}
           />
           <button
-            className="border border-stone-700 btn btn-wide hover:bg-stone-500"
+            className="border-2 border-stone-600 btn btn-wide hover:bg-stone-500"
             onClick={onSend}
           >
             <svg
