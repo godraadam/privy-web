@@ -3,10 +3,10 @@ import axios from "axios";
 import { routerApiUrl } from "../store";
 import { useNavigate } from "react-router-dom";
 import Footer from "./Footer";
-import Navbar from "./Navbar";
 import { trackPromise } from "react-promise-tracker";
 import LoadingIndicator from "./LoadingIndicator";
 import { usePromiseTracker } from "react-promise-tracker";
+import LoginNavbar from "./LoginNavbar";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -153,8 +153,8 @@ export default function Login() {
   }
 
   return (
-    <div className="flex flex-col bg-black min-h-screen">
-      <Navbar />
+    <div className="flex flex-col bg-gradient-to-b from-black to-stone-800 min-h-screen">
+      <LoginNavbar />
       <div className="flex justify-center space-x-3 pt-20">
         {localUsers.length > 0 ? (
           localUsers.map((user, index) => {

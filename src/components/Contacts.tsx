@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { PrivyContact } from "../models/privyContact";
-import { PrivyMessage } from "../models/privyMessage";
 import { routerApiUrl } from "../store";
 import AddContactForm from "./AddContactForm";
 import Contact from "./Contact";

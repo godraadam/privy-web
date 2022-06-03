@@ -97,17 +97,39 @@ export default function Messages() {
       {/* navbar*/}
       <MessagesNavbar />
       <div className="flex flex-row" style={{ minHeight: "90%" }}>
-        {/* messages */}
+        {/* contacts list */}
         <Contacts setSelectedContact={setSelectedContact} />
         {/* messages */}
         {!selectedContact ? (
-          <div className="flex mx-auto items-center">
+          <div className="flex flex-grow justify-center items-center bg-gradient-to-b from-base-200 to-stone-800">
             <img src="/privy-logo.png" alt="not found" />
           </div>
         ) : (
           <div className="flex flex-col flex-grow">
-            <div className="text-center text-xl font-bold py-3 bg-black">
-              {selectedContact.alias}
+            <div className="flex flex-row items-end text-white gap-5 px-5 text-xl font-bold py-3 bg-black border-b border-stone-500">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="white"
+              >
+                <path d="M0 1v16.981h4v5.019l7-5.019h13v-16.981h-24zm13 12h-8v-1h8v1zm6-3h-14v-1h14v1zm0-3h-14v-1h14v1z" />
+              </svg>
+              <div
+                className="link link-hover"
+                onClick={() =>
+                  navigate(
+                    `/profile/?username=${
+                      selectedContact.alias
+                    }&pubkey=${encodeURIComponent(
+                      selectedContact.pubkey
+                    )}&contact=true&trusted=${selectedContact.trusted}`
+                  )
+                }
+              >
+                {selectedContact.alias}
+              </div>
             </div>
             <div
               className="flex flex-col flex-grow overflow-y-scroll bg-gradient-to-b from-black to-stone-800"
