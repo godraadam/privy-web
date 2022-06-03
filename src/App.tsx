@@ -5,7 +5,7 @@ export default function App() {
   
   const navigate = useNavigate();
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-black to-stone-700">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-black to-zinc-700">
       <div className="hero flex-grow content-center">
         <div className="hero-content text-center">
           <div className="max-w-md">

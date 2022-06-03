@@ -36,7 +36,7 @@ export default function Profile() {
   async function onSaveChangesClicked() {}
 
   return (
-    <div className="flex flex-col min-h-screen bg-base-200">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-black to-zinc-800">
       <div className="navbar flex flex-row border-stone-600 border-b px-0">
         <button
           className="btn flex flex-row gap-3"
@@ -98,7 +98,7 @@ export default function Profile() {
           </div>
         </div>
       </div>
-      <div className="flex flex-grow bg-base-200 justify-center py-10">
+      <div className="flex flex-grow justify-center py-10">
         <div className="text-center">
           <div className="max-w-2xl space-y-10 justify-center">
             <h1 className="text-5xl font-bold">Profile</h1>

@@ -5,4 +5,6 @@ export interface PrivyMessage {
   nonce: string;
   signature: string;
   hash?: string;
+  delivered?: boolean;
+  seen?: boolean;
 }
