@@ -1,13 +1,17 @@
 import { usePromiseTracker } from "react-promise-tracker";
 import { BarLoader } from "react-spinners";
 
-export default function LoadingIndicator() {
+interface LoadingIndicatorProps {
+  width: number
+}
+
+export default function LoadingIndicator(props: LoadingIndicatorProps) {
   const { promiseInProgress } = usePromiseTracker();
 
   return (
     promiseInProgress ? 
-      <div className="flex align-center justify-center">
-        <BarLoader color="#ffffff" loading={true} width={150} height={5} />
+      <div className="flex align-center justify-center flex-grow">
+        <BarLoader color="#ffffff" loading={true} height={2}/>
       </div>
       :
       <></>

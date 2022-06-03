@@ -15,7 +15,7 @@ export default function OutgoingMessage(props: MessageProps) {
       </div>
       <div className="indicator">
         {props.message.delivered && (
-          <span className="indicator-item indicator-bottom badge p-0">
+          <span className="indicator-item indicator-bottom badge p-0" title="delivered">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"

@@ -5,6 +5,7 @@ interface ContactProps {
   index: number;
   contact: PrivyContact;
   onClick: () => void;
+  selectedAlias: string;
 }
 
 export default function Contact(props: ContactProps) {
@@ -20,8 +21,12 @@ export default function Contact(props: ContactProps) {
 
   return (
     <li className=" w-full max-w-md" onClick={props.onClick} key={props.index}>
-      <div className="flex flex-row gap-3 justify-between items-center bg-stone-700 hover:bg-stone-600 rounded-full px-4 py-3">
-        {props.contact.alias}
+      <div className="flex flex-row gap-3 justify-between items-center bg-stone-800 hover:bg-stone-600 rounded-full px-4 py-3">
+        {props.selectedAlias === props.contact.alias ? (
+          <div className="font-bold">{props.contact.alias}</div>
+        ) : (
+          <div>{props.contact.alias}</div>
+        )}
         <div className="flex flex-row gap-2">
           {props.contact.trusted && (
             <svg

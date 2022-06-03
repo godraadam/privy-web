@@ -7,6 +7,7 @@ import Contact from "./Contact";
 
 interface ContacsProps {
   setSelectedContact: (contact: PrivyContact) => void;
+  selectedAlias: string;
 }
 
 export default function Contacts(props: ContacsProps) {
@@ -24,11 +25,11 @@ export default function Contacts(props: ContacsProps) {
   }
 
   return (
-    <div className="flex flex-col max-w-md space-y-2 px-6 w-full pt-5 bg-base-200 border-stone-600 border-r">
+    <div className="flex flex-col max-w-xs space-y-2 px-6 w-full pt-5 bg-base-200 border-stone-600 border-r">
       <AddContactForm f={fetchContacts} />
       {/* contacts */}
       <div className="divider"></div>
-      <h1 className="text-xl font-bold">Contacts</h1>
+      <h1 className="text-xl font-bold pb-5">Contacts</h1>
       <ul className="space-y-2">
         {contacts.length > 0 ? (
           contacts.map((contact, index) => {
@@ -37,6 +38,7 @@ export default function Contacts(props: ContacsProps) {
                 index={index}
                 contact={contact}
                 onClick={() => props.setSelectedContact(contact)}
+                selectedAlias={props.selectedAlias}
               />
             );
           })

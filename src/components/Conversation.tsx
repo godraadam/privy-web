@@ -6,9 +6,12 @@ import { PrivyMessage } from "../models/privyMessage";
 import { routerApiUrl } from "../store";
 import IncomingMessage from "./IncomingMessage";
 import OutgoingMessage from "./OutgoingMessage";
+import { trackPromise, usePromiseTracker } from "react-promise-tracker";
+import LoadingIndicator from "./LoadingIndicator";
 
 interface ConversationProps {
   contact: PrivyContact;
+  onQuit: () => void;
 }
 
 export default function Conversation(props: ConversationProps) {
@@ -16,24 +19,24 @@ export default function Conversation(props: ConversationProps) {
   const [message, setMessage] = useState("");
 
   const navigate = useNavigate();
+  const promiseInProgress = usePromiseTracker();
 
   useEffect(() => {
     let intervalId: NodeJS.Timer;
-    
+
     // fetch messages when mounting
     (async () => {
-      fetchMessagesWithSelectedAccount();
+      trackPromise(fetchMessagesWithSelectedAccount());
 
       // then fetch every half a second
       intervalId = setInterval(fetchMessagesWithSelectedAccount, 2000);
-
     })();
-    
+
     // cleanup
     return () => {
       clearInterval(intervalId);
     };
-  }, []);
+  }, [props.contact]);
 
   async function fetchMessagesWithSelectedAccount() {
     const res = await axios.get(
@@ -80,52 +83,79 @@ export default function Conversation(props: ConversationProps) {
 
   return (
     <div className="flex flex-col flex-grow">
-      <div className="flex flex-row items-end text-white gap-5 px-5 text-xl font-bold py-3 bg-black border-b border-stone-500">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="white"
-        >
-          <path d="M0 1v16.981h4v5.019l7-5.019h13v-16.981h-24zm13 12h-8v-1h8v1zm6-3h-14v-1h14v1zm0-3h-14v-1h14v1z" />
-        </svg>
-        <div
-          className="link link-hover"
-          onClick={() =>
-            navigate(
-              `/profile/?username=${
-                props.contact.alias
-              }&pubkey=${encodeURIComponent(
-                props.contact.pubkey
-              )}&contact=true&trusted=${props.contact.trusted}`
-            )
-          }
-        >
-          {props.contact.alias}
-        </div>
+      <div className="flex flex-row justify-between bg-black border-b border-stone-500">
+          <div className="flex px-5 flex-row items-center text-white gap-5 text-xl font-bold py-3">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="white"
+            >
+              <path d="M0 1v16.981h4v5.019l7-5.019h13v-16.981h-24zm13 12h-8v-1h8v1zm6-3h-14v-1h14v1zm0-3h-14v-1h14v1z" />
+            </svg>
+            <div
+              className="link link-hover"
+              onClick={() =>
+                navigate(
+                  `/profile/?username=${
+                    props.contact.alias
+                  }&pubkey=${encodeURIComponent(
+                    props.contact.pubkey
+                  )}&contact=true&trusted=${props.contact.trusted}`
+                )
+              }
+            >
+              {props.contact.alias}
+            </div>
+            <LoadingIndicator width={200}/>
+          </div>
+          
+        <button className="" onClick={props.onQuit}>
+          <svg
+            clip-rule="evenodd"
+            fill-rule="evenodd"
+            stroke-linejoin="round"
+            stroke-miterlimit="2"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+            width={24}
+            height={24}
+            fill="white"
+          >
+            <path d="m12 10.93 5.719-5.72c.146-.146.339-.219.531-.219.404 0 .75.324.75.749 0 .193-.073.385-.219.532l-5.72 5.719 5.719 5.719c.147.147.22.339.22.531 0 .427-.349.75-.75.75-.192 0-.385-.073-.531-.219l-5.719-5.719-5.719 5.719c-.146.146-.339.219-.531.219-.401 0-.75-.323-.75-.75 0-.192.073-.384.22-.531l5.719-5.719-5.72-5.719c-.146-.147-.219-.339-.219-.532 0-.425.346-.749.75-.749.192 0 .385.073.531.219z" />
+          </svg>
+        </button>
       </div>
-      <div className="flex flex-col flex-grow overflow-y-scroll bg-gradient-to-b from-black to-zinc-800">
-        <div className="flex flex-col border-l-white flex-grow border-1 pt-20 px-10">
-          <ul className="space-y-2">
-            {messages.map((msg, index) => {
-              return (
-                <li key={index}>
-                  {msg.from === props.contact.alias ? (
-                    <IncomingMessage message={msg} />
-                  ) : (
-                    <OutgoingMessage message={msg} />
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+      <div className="flex flex-col flex-grow overflow-y-scroll scroll-smooth bg-gradient-to-b from-black to-zinc-800">
+        <div className="flex flex-col-reverse flex-grow border-1 pt-20 px-10 pb-24">
+          {messages.length > 0 ? (
+            <ul className="space-y-2">
+              {messages.map((msg, index) => {
+                return (
+                  <li key={index}>
+                    {msg.from === props.contact.alias ? (
+                      <IncomingMessage message={msg} />
+                    ) : (
+                      <OutgoingMessage message={msg} />
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className="flex flex-grow justify-center items-center">
+              <div className="text-center text-md">
+                Nothing here yet. Say Hi!
+              </div>
+            </div>
+          )}
         </div>
-        <div className="flex flex-row space-x-2 px-10 py-5 justify-center">
+        <div className="flex flex-row space-x-2 px-10 pt-2 pb-5 justify-center sticky bottom-0 bg-zinc-800">
           <input
             type="text"
             placeholder="Type your message"
-            className="input input-bordered w-2/3"
+            className="input input-bordered w-2/3 bg-stone-800"
             value={message}
             onChange={(e) =>
               setMessage((e.target as HTMLInputElement).value ?? "")

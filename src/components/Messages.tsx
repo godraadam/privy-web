@@ -31,19 +31,21 @@ export default function Messages() {
 
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col flex-grow h-screen max-w-screen overflow-clip">
       {/* navbar*/}
       <MessagesNavbar />
-      <div className="flex flex-row" style={{ minHeight: "90%" }}>
+      <div className="flex flex-row" style={{height:"95vh"}}>
         {/* contacts list */}
-        <Contacts setSelectedContact={setSelectedContact} />
+        <Contacts setSelectedContact={setSelectedContact} selectedAlias={selectedContact?.alias ?? ""}/>
         {/* messages */}
         {!selectedContact ? (
-          <div className="flex flex-grow justify-center items-center bg-gradient-to-b from-base-200 to-zinc-800">
-            <img src="/privy-logo.png" alt="not found" />
+          <div className="flex flex-grow justify-center items-center bg-gradient-to-b from-black to-zinc-900">
+            <div className="text-center text-md">
+            Select a contact to begin conversation
+            </div>
           </div>
         ) : (
-          <Conversation contact={selectedContact}/>
+          <Conversation contact={selectedContact} onQuit={() => setSelectedContact(null)}/>
         )}
       </div>
     </div>

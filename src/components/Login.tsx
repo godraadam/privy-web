@@ -197,7 +197,7 @@ export default function Login() {
           }
           value={password}
         />
-        <LoadingIndicator />
+        <LoadingIndicator width={200}/>
         <div className="flex justify-center space-x-2">
           {localUsers.map((user) => user.username).includes(username) ? (
             <button
