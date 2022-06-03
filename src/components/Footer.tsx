@@ -1,13 +1,13 @@
 export default function Footer() {
   return (
-    <footer className="footer footer-center p-5 bg-stone-800 text-base-content rounded">
-      <div className="grid grid-flow-col gap-4">
+    <footer className="footer footer-center p-3 bg-black text-base-content">
+      <div className="grid grid-flow-col gap-5">
         <a className="link link-hover">About Privy</a>
         <a className="link link-hover">Contact</a>
         <a className="link link-hover">API</a>
       </div>
       <div>
-        <div className="grid grid-flow-col gap-4">
+        <div className="grid grid-flow-col gap-5">
           <a href="https://github.com/godraadam">
             <svg
               xmlns="http://www.w3.org/2000/svg"

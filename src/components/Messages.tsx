@@ -15,21 +15,21 @@ export default function Messages() {
   const [selectedContact, setSelectedContact] = useState<PrivyContact | null>(
     null
   );
-  
+
   const messagesEndRef = useRef(null);
 
   const navigate = useNavigate();
-  
+
   const scrollToBottom = () => {
-    if(!messagesEndRef) {
+    if (!messagesEndRef) {
       return;
     }
     if (!messagesEndRef.current) {
       return;
     }
     // @ts-ignore
-    messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
-  }
+    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(scrollToBottom, [messages]);
 
@@ -45,7 +45,7 @@ export default function Messages() {
       await fetchMessagesWithSelectedAccount();
     })();
   }, [selectedContact]);
-  
+
   async function fetchMessagesWithSelectedAccount() {
     if (!selectedContact) {
       return;
@@ -61,8 +61,6 @@ export default function Messages() {
     }
   }
 
-
-
   const handleKeypress = (e: KeyboardEvent) => {
     if (e.code === "Enter") {
       onSend();
@@ -74,7 +72,7 @@ export default function Messages() {
       // don't send empty message
       return;
     }
-    if(!selectedContact) {
+    if (!selectedContact) {
       return;
     }
     setMessage("");
@@ -97,20 +95,25 @@ export default function Messages() {
   return (
     <div className="flex flex-col h-screen">
       {/* navbar*/}
-      <MessagesNavbar/>
-      <div className="flex flex-row" style={{minHeight:"90%"}}>
+      <MessagesNavbar />
+      <div className="flex flex-row" style={{ minHeight: "90%" }}>
         {/* messages */}
-        <Contacts
-          setSelectedContact={setSelectedContact}
-        />
-      {/* messages */}
+        <Contacts setSelectedContact={setSelectedContact} />
+        {/* messages */}
         {!selectedContact ? (
           <div className="flex mx-auto items-center">
             <img src="/privy-logo.png" alt="not found" />
           </div>
         ) : (
-          <div className="flex flex-col flex-grow overflow-y-scroll" ref={messagesEndRef}>
-            <div className="flex flex-col border-l-white border-1 pt-20 px-10 bg-stone-900 ">
+          <div className="flex flex-col flex-grow">
+            <div className="text-center text-xl font-bold py-3 bg-black">
+              {selectedContact.alias}
+            </div>
+            <div
+              className="flex flex-col flex-grow overflow-y-scroll bg-gradient-to-b from-black to-stone-800"
+              ref={messagesEndRef}
+            >
+              <div className="flex flex-col border-l-white flex-grow border-1 pt-20 px-10">
                 <ul className="space-y-2">
                   {messages.map((msg, index) => {
                     return (
@@ -125,42 +128,43 @@ export default function Messages() {
                   })}
                 </ul>
               </div>
-            <div className="flex flex-row space-x-2 px-10 py-5 justify-center">
-              <input
-                type="text"
-                placeholder="Type your message"
-                className="input input-bordered w-2/3"
-                value={message}
-                onChange={(e) =>
-                  setMessage((e.target as HTMLInputElement).value ?? "")
-                }
-                onKeyUp={handleKeypress}
-              />
-              <button
-                className="border border-stone-500 btn btn-wide hover:bg-stone-500"
-                onClick={onSend}
-              >
-                <svg
-                  clip-rule="evenodd"
-                  fill-rule="evenodd"
-                  stroke-linejoin="round"
-                  stroke-miterlimit="2"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                  height="30"
-                  width="30"
-                  fill="white"
+              <div className="flex flex-row space-x-2 px-10 py-5 justify-center">
+                <input
+                  type="text"
+                  placeholder="Type your message"
+                  className="input input-bordered w-2/3"
+                  value={message}
+                  onChange={(e) =>
+                    setMessage((e.target as HTMLInputElement).value ?? "")
+                  }
+                  onKeyUp={handleKeypress}
+                />
+                <button
+                  className="border border-stone-700 btn btn-wide hover:bg-stone-500"
+                  onClick={onSend}
                 >
-                  <path
-                    d="m12.012 1.995c-5.518 0-9.998 4.48-9.998 9.998s4.48 9.998 9.998 9.998 9.997-4.48 9.997-9.998-4.479-9.998-9.997-9.998zm0 1.5c4.69 0 8.497 3.808 8.497 8.498s-3.807 8.498-8.497 8.498-8.498-3.808-8.498-8.498 3.808-8.498 8.498-8.498zm1.528 4.715s1.502 1.505 3.255 3.259c.146.147.219.339.219.531s-.073.383-.219.53c-1.753 1.754-3.254 3.258-3.254 3.258-.145.145-.336.217-.527.217-.191-.001-.383-.074-.53-.221-.293-.293-.295-.766-.004-1.057l1.978-1.977h-6.694c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h6.694l-1.979-1.979c-.289-.289-.286-.762.006-1.054.147-.147.339-.221.531-.222.19 0 .38.071.524.215z"
-                    fill-rule="nonzero"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    clip-rule="evenodd"
+                    fill-rule="evenodd"
+                    stroke-linejoin="round"
+                    stroke-miterlimit="2"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="28"
+                    width="28"
+                    fill="white"
+                  >
+                    <path
+                      d="m12.012 1.995c-5.518 0-9.998 4.48-9.998 9.998s4.48 9.998 9.998 9.998 9.997-4.48 9.997-9.998-4.479-9.998-9.997-9.998zm0 1.5c4.69 0 8.497 3.808 8.497 8.498s-3.807 8.498-8.497 8.498-8.498-3.808-8.498-8.498 3.808-8.498 8.498-8.498zm1.528 4.715s1.502 1.505 3.255 3.259c.146.147.219.339.219.531s-.073.383-.219.53c-1.753 1.754-3.254 3.258-3.254 3.258-.145.145-.336.217-.527.217-.191-.001-.383-.074-.53-.221-.293-.293-.295-.766-.004-1.057l1.978-1.977h-6.694c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h6.694l-1.979-1.979c-.289-.289-.286-.762.006-1.054.147-.147.339-.221.531-.222.19 0 .38.071.524.215z"
+                      fill-rule="nonzero"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         )}
-        </div>  
+      </div>
     </div>
   );
 }

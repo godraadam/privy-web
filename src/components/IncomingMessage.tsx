@@ -10,7 +10,7 @@ export default function IncomingMessage(props: MessageProps) {
       <div className="w-fit p-3 text-xs text-stone-400">
         {new Date(parseInt(props.message.timestamp)).toLocaleTimeString()}
       </div>
-      <div className="w-fit bg-stone-500 p-3 rounded-xl text-sm text-white max-w-4xl">
+      <div className="w-fit bg-stone-500 px-5 py-2 rounded-xl text-sm text-white max-w-4xl">
         {props.message.content}
       </div>
     </div>

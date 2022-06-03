@@ -10,13 +10,14 @@ export default function AddContactForm(props: AddContactFormProps) {
   const [showContactForm, setShowContactForm] = useState(false);
   const [newContactAlias, setNewContactAlias] = useState("");
   const [newContactPubKey, setNewContactPubKey] = useState("");
+  const [newContactTrusted, setNewContactTrusted] = useState(false);
 
   async function onAddNewContact() {
     try {
       const res = await axios.post(`${routerApiUrl}/contact/add`, {
         alias: newContactAlias,
         pubkey: newContactPubKey,
-        trusted: false,
+        trusted: newContactTrusted,
       });
       switch (res.status) {
       }
@@ -66,7 +67,7 @@ export default function AddContactForm(props: AddContactFormProps) {
           <div className="form-control w-full max-w-md">
             <label className="label cursor-pointer">
               <span className="label-text">Trusted contact</span>
-              <input type="checkbox" className="toggle" />
+              <input type="checkbox" className="toggle" onClick={() => setNewContactTrusted(!newContactTrusted)}/>
             </label>
           </div>
           <button
