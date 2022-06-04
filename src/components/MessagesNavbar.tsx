@@ -36,7 +36,7 @@ export default function MessagesNavbar() {
   return (
     <div className="navbar p-0 flex bg-black flex-row min-w-screen border-stone-600 border-b z-40" style={{height:"5vh"}}>
       <h1 className="text-2xl mx-auto font-bold">Privy</h1>
-      <div className="justify-end py-2">
+      <div className="justify-end py-2 px-3">
         <div className="dropdown">
           <button className="flex flex-row border bg-stone-800 text-white border-stone-700 rounded-full px-6 gap-2 py-2 normal-case text-md hover:bg-stone-600">
             {userName}

@@ -215,20 +215,20 @@ export default function Login() {
               <button
                 className="btn hover:bg-white text-black bg-stone-400"
                 disabled={
-                  !(username.length > 0 && validatePassword()) ||
-                  promiseInProgress
+                  !(username.length > 0 && validatePassword())
                 }
                 onClick={onAddAccount}
+                style={{ display: !promiseInProgress ? "block" : "none" }}
               >
                 Import account
               </button>
               <button
                 className="btn hover:bg-white text-black bg-stone-400"
                 disabled={
-                  !(username.length > 0 && validatePassword()) ||
-                  promiseInProgress
+                  !(username.length > 0 && validatePassword())
                 }
                 onClick={onCreateAccount}
+                style={{ display: !promiseInProgress ? "block" : "none" }}
               >
                 Create account
               </button>

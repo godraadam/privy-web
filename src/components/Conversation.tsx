@@ -6,9 +6,8 @@ import { PrivyMessage } from "../models/privyMessage";
 import { routerApiUrl } from "../store";
 import IncomingMessage from "./IncomingMessage";
 import OutgoingMessage from "./OutgoingMessage";
-import { trackPromise, usePromiseTracker } from "react-promise-tracker";
+import { trackPromise } from "react-promise-tracker";
 import LoadingIndicator from "./LoadingIndicator";
-import { isEqual } from "lodash";
 
 interface ConversationProps {
   contact: PrivyContact;
@@ -47,19 +46,23 @@ export default function Conversation(props: ConversationProps) {
   }, [props.contact]);
 
   async function fetchMessagesWithSelectedAccount() {
-    const res = await axios.get(
-      `${routerApiUrl}/message/with/${props.contact.alias}`,
-      { validateStatus: (status) => true }
-    );
-    switch (res.status) {
-      case 200:
-        const msgs = res.data as PrivyMessage[];
-        setMessages(msgs);
-        break;
-      case 403:
-        // logged out, redirect
-        navigate("/login");
-        break;
+    try {
+      const res = await axios.get(
+        `${routerApiUrl}/message/with/${props.contact.alias}`,
+        { validateStatus: (status) => true }
+      );
+      switch (res.status) {
+        case 200:
+          const msgs = res.data as PrivyMessage[];
+          setMessages(msgs);
+          break;
+        case 403:
+          // logged out, redirect
+          navigate("/login");
+          break;
+      }
+    } catch (error) {
+      console.error(error);
     }
   }
 
@@ -96,7 +99,7 @@ export default function Conversation(props: ConversationProps) {
 
   return (
     <div className="flex flex-col flex-grow">
-      <div className="flex flex-row justify-between bg-black border-b border-stone-500">
+      <div className="flex flex-row justify-between bg-black border-b border-stone-500 pr-3">
         <div className="flex px-5 flex-row items-center text-white gap-5 text-xl font-bold py-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
