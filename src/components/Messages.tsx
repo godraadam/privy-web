@@ -1,14 +1,11 @@
 import axios from "axios";
-import { KeyboardEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PrivyContact } from "../models/privyContact";
-import { PrivyMessage } from "../models/privyMessage";
 import { routerApiUrl } from "../store";
 import Contacts from "./Contacts";
 import Conversation from "./Conversation";
-import IncomingMessage from "./IncomingMessage";
 import MessagesNavbar from "./MessagesNavbar";
-import OutgoingMessage from "./OutgoingMessage";
 
 export default function Messages() {
   const [selectedContact, setSelectedContact] = useState<PrivyContact | null>(

@@ -32,7 +32,7 @@ export default function Contacts(props: ContacsProps) {
       {/* contacts */}
       <div className="divider"></div>
       <h1 className="text-xl font-bold pb-5">Contacts</h1>
-      <ul className="space-y-2">
+      <ul className="space-y-2 divide-y">
         {contacts.length > 0 ? (
           contacts.map((contact, index) => {
             return (

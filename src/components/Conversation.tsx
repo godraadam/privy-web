@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { KeyboardEvent, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PrivyContact } from "../models/privyContact";
@@ -44,26 +44,25 @@ export default function Conversation(props: ConversationProps) {
       clearInterval(intervalId);
     };
   }, [props.contact]);
-
+  
   async function fetchMessagesWithSelectedAccount() {
     try {
       const res = await axios.get(
-        `${routerApiUrl}/message/with/${props.contact.alias}`,
-        { validateStatus: (status) => true }
+        `${routerApiUrl}/message/with/${props.contact.alias}`, {validateStatus: (status) => status < 500}
       );
-      switch (res.status) {
+      console.log(res)
+      switch(res.status) {
         case 200:
           const msgs = res.data as PrivyMessage[];
           setMessages(msgs);
           break;
         case 403:
-          // logged out, redirect
           navigate("/login");
           break;
       }
-    } catch (error) {
-      console.error(error);
-    }
+    } catch(error) {
+      console.log(error)
+    }      
   }
 
   async function onSend() {

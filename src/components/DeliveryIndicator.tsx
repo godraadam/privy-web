@@ -5,7 +5,6 @@ interface DeliveryIndicatorProps {
 }
 
 export default function DeliveryIndicator(props: DeliveryIndicatorProps) {
-  console.log(props.delivered);
   switch (props.delivered) {
     case "delivered":
      return <></>
