@@ -34,8 +34,8 @@ export default function Conversation(props: ConversationProps) {
       await trackPromise(fetchMessagesWithSelectedAccount());
     })();
 
-    // then fetch every half a second
-    const intervalId = setInterval(fetchMessagesWithSelectedAccount, 2000);
+    // then fetch every seconds
+    const intervalId = setInterval(fetchMessagesWithSelectedAccount, 1000);
 
     scrollToBottom();
 
@@ -194,7 +194,7 @@ export default function Conversation(props: ConversationProps) {
           <input
             type="text"
             placeholder="Type your message"
-            className="input input-bordered w-2/3 bg-stone-800"
+            className="input input-bordered w-full bg-stone-800"
             value={message}
             onChange={(e) =>
               setMessage((e.target as HTMLInputElement).value ?? "")
@@ -202,7 +202,7 @@ export default function Conversation(props: ConversationProps) {
             onKeyUp={handleKeypress}
           />
           <button
-            className="border-2 border-stone-600 btn btn-wide hover:bg-stone-500"
+            className="border-2 border-stone-600 btn hover:bg-stone-500"
             onClick={onSend}
           >
             <svg

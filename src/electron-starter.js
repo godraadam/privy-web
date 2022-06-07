@@ -4,10 +4,6 @@ const app = electron.app;
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
 
-const path = require('path');
-const url = require('url');
-const isDev = require('electron-is-dev')
-
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
@@ -17,14 +13,8 @@ function createWindow() {
     mainWindow = new BrowserWindow({width: 800, height: 600, titleBarStyle: 'hidden'});
 
     // and load the index.html of the app.
-    mainWindow.loadURL(
-        isDev
-        ? 'http://localhost:3000'
-        : `file://${path.join(__dirname, '../build/index.html')}`);
-
-    // Open the DevTools.
-    mainWindow.webContents.openDevTools();
-
+    //mainWindow.loadFile('./build/index.html')
+    mainWindow.loadURL('http://localhost:3000');
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
         // Dereference the window object, usually you would store windows
