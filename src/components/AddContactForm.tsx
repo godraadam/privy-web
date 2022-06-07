@@ -30,7 +30,7 @@ export default function AddContactForm(props: AddContactFormProps) {
   return (
     <>
       <button
-        className="flex flex-row justify-between text-white text-sm px-5 items-center gap-3 border border-stone-500 rounded-full py-3 max-w-sm hover:bg-stone-600 text-normal"
+        className="flex border-none flex-row justify-between text-white text-sm px-5 items-center gap-3 border border-stone-500 rounded-full py-3 max-w-sm hover:bg-stone-600 text-normal"
         onClick={() => setShowContactForm(!showContactForm)}
       >
         Add contact
