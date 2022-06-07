@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import QRCode from "react-qr-code";
 import ProfileNavbar from "./ProfileNavbar";
 import axios from "axios";
@@ -14,6 +14,20 @@ export default function Profile() {
   );
   const [editingAlias, setEditingAlias] = useState(false);
   const [newAlias, setNewAlias] = useState(searchParams.get("username") ?? "");
+  
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    (async () => {
+      try {
+        // fetch self
+        const res = await axios.get(`${routerApiUrl}/auth/whoami`);
+      } catch (error) {
+        // if not logged in, redirect
+        navigate("/login");
+      }
+    })();
+  });
 
   function onCopyClicked() {
     navigator.clipboard.writeText(searchParams.get("pubkey") ?? "");
@@ -30,6 +44,7 @@ export default function Profile() {
     }
     try {
       const res = await axios.delete(`${routerApiUrl}/contact/rm/${alias}`);
+      navigate("/messages");
     } catch (error) {
       console.error(error);
     }
@@ -41,7 +56,8 @@ export default function Profile() {
       return;
     }
     try {
-      const res = await axios.delete(`${routerApiUrl}/contact/rm/${alias}`);
+      const res = await axios.delete(`${routerApiUrl}/message/rm/all-with/${alias}`);
+      navigate("/messages");
     } catch (error) {
       console.error(error);
     }

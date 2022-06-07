@@ -24,7 +24,7 @@ export default function Messages() {
         navigate("/login");
       }
     })();
-  }, []);
+  });
 
 
   return (
