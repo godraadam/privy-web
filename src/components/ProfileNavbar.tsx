@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom"
 
-export interface ProfileNavbarProps {
+interface ProfileNavbarProps {
   contactAlias: string;
   self: boolean;
 }
 
-export default function(props: ProfileNavbarProps) {
+export default function ProfileNavbar(props: ProfileNavbarProps) {
     
     const navigate = useNavigate();
     return(

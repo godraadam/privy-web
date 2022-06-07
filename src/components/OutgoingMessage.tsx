@@ -4,8 +4,8 @@ import { routerApiUrl } from "../store";
 import DeliveryIndicator from "./DeliveryIndicator";
 import { trackPromise } from "react-promise-tracker";
 import { usePromiseTracker } from "react-promise-tracker";
-import { BeatLoader, CircleLoader } from "react-spinners";
-
+import { BeatLoader } from "react-spinners";
+import ReactMarkdown from "react-markdown"
 interface MessageProps {
   message: PrivyMessage;
 }
@@ -50,7 +50,6 @@ export default function OutgoingMessage(props: MessageProps) {
       <div className="flex flex-row space-x-2 justify-end items-center">
         <div className="dropdown dropdown-left">
           <label tabIndex={0} className="btn btn-circle btn-ghost">
-            {!promiseInProgress ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -65,9 +64,7 @@ export default function OutgoingMessage(props: MessageProps) {
                   d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
                 ></path>
               </svg>
-            ) : (
-              <BeatLoader color="#ffffff" loading={true} size={2} />
-            )}
+            
           </label>
           <ul
             tabIndex={0}
@@ -90,7 +87,7 @@ export default function OutgoingMessage(props: MessageProps) {
         <div className="indicator">
           <DeliveryIndicator delivered={props.message.delivered} />
           <div className="w-fit bg-stone-700 px-5 py-3 rounded-xl text-sm text-white max-w-4xl">
-            {props.message.content}
+            <ReactMarkdown children={props.message.content}></ReactMarkdown>
           </div>
         </div>
       </div>
