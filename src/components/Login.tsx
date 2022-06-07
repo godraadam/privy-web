@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { KeyboardEvent, useEffect, useState } from "react";
 import axios from "axios";
 import { routerApiUrl } from "../store";
 import { useNavigate } from "react-router-dom";
@@ -12,23 +12,32 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [localUsers, setLocalUsers] = useState<any[]>([]);
-  const [showSuccessAccount, setShowSuccessAccount] = useState(false);
-  const [showErrorAccount, setShowErrorAccount] = useState(false);
-  const [accountStateMessage, setAccountStateMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const navigate = useNavigate();
   const { promiseInProgress } = usePromiseTracker();
 
   useEffect(() => {
     (async () => {
-      const res = await axios.get(`${routerApiUrl}/auth/whoami`, {
-        validateStatus: (status) => true,
-      });
-      if (res.status === 200) {
-        // someone already logged in, redirect
-        navigate("/messages");
-      } else if (res.status === 404) {
-        await fetchAccounts();
+      try {
+        const res = await axios.get(`${routerApiUrl}/auth/whoami`, {
+          validateStatus: (status) => true,
+        });
+        if (res.status === 200) {
+          // someone already logged in, redirect
+          navigate("/messages");
+        } else if (res.status === 404) {
+          await fetchAccounts();
+        }
+      } catch (error) {
+        console.log(error);
+        if (axios.isAxiosError(error)) {
+          if (error.code === "ERR_NETWORK") {
+            displayError("Privy Router is not accessible! Check if it is up and running first.")
+          }
+        }
       }
     })();
   }, [navigate]);
@@ -55,10 +64,14 @@ export default function Login() {
 
   async function onLogin() {
     try {
-      const res = await axios.post(`${routerApiUrl}/auth/login`, {
-        username: username,
-        password: password,
-      }, {validateStatus: (status) => true});
+      const res = await axios.post(
+        `${routerApiUrl}/auth/login`,
+        {
+          username: username,
+          password: password,
+        },
+        { validateStatus: (status) => true }
+      );
       switch (res.status) {
         case 200:
           displaySuccess(`Logged in as ${username}!`);
@@ -72,9 +85,7 @@ export default function Login() {
           break;
         case 401:
           setPassword("");
-          displayError(
-            `The password does not match!`
-          );
+          displayError(`The password does not match!`);
           break;
         default:
           displayError("Something went wrong, try again later!");
@@ -134,26 +145,34 @@ export default function Login() {
   }
 
   function displayError(error: string) {
-    setShowSuccessAccount(false);
-    setShowErrorAccount(true);
-    setAccountStateMessage(error);
-    setTimeout(() => setShowErrorAccount(false), 3000);
+    setShowSuccess(false);
+    setShowError(true);
+    setAlertMessage(error);
+    setTimeout(() => setShowError(false), 4000);
   }
 
   function displaySuccess(msg: string) {
-    setShowSuccessAccount(true);
-    setShowErrorAccount(false);
-    setAccountStateMessage(msg);
-    setTimeout(() => setShowSuccessAccount(false), 3000);
-  }
-  
-  function validatePassword() {
-    const passwordRegEx = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$/
-    return !!password.match(passwordRegEx);
+    setShowSuccess(true);
+    setShowError(false);
+    setAlertMessage(msg);
+    setTimeout(() => setShowSuccess(false), 4000);
   }
 
+  function validatePassword() {
+    const passwordRegEx = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$/;
+    return !!password.match(passwordRegEx);
+  }
+  
+  const handleKeypress = (e: KeyboardEvent) => {
+    if (e.code === "Enter") {
+      if (localUsers.map((user) => user.username).includes(username) && password.length > 0) {
+        onLogin();
+      }
+    }
+  };
+
   return (
-    <div className="flex flex-col bg-gradient-to-b from-black to-stone-800 min-h-screen">
+    <div className="flex flex-col bg-gradient-to-b from-black to-stone-800 min-h-screen" onKeyUp={handleKeypress}>
       <LoginNavbar />
       <div className="flex justify-center space-x-3 pt-20">
         {localUsers.length > 0 ? (
@@ -197,7 +216,7 @@ export default function Login() {
           }
           value={password}
         />
-        <LoadingIndicator width={200}/>
+        <LoadingIndicator width={200} />
         <div className="flex justify-center space-x-2">
           {localUsers.map((user) => user.username).includes(username) ? (
             <button
@@ -214,9 +233,7 @@ export default function Login() {
             <>
               <button
                 className="btn hover:bg-white text-black bg-stone-400"
-                disabled={
-                  !(username.length > 0 && validatePassword())
-                }
+                disabled={!(username.length > 0 && validatePassword())}
                 onClick={onAddAccount}
                 style={{ display: !promiseInProgress ? "block" : "none" }}
               >
@@ -224,9 +241,7 @@ export default function Login() {
               </button>
               <button
                 className="btn hover:bg-white text-black bg-stone-400"
-                disabled={
-                  !(username.length > 0 && validatePassword())
-                }
+                disabled={!(username.length > 0 && validatePassword())}
                 onClick={onCreateAccount}
                 style={{ display: !promiseInProgress ? "block" : "none" }}
               >
@@ -239,7 +254,7 @@ export default function Login() {
         </div>
         <div
           className="alert alert-success shadow-lg "
-          style={{ display: showSuccessAccount ? "block" : "none" }}
+          style={{ display: showSuccess ? "block" : "none" }}
         >
           <div>
             <svg
@@ -255,12 +270,12 @@ export default function Login() {
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span>{accountStateMessage}</span>
+            <span>{alertMessage}</span>
           </div>
         </div>
         <div
           className="alert alert-error shadow-lg"
-          style={{ display: showErrorAccount ? "block" : "none" }}
+          style={{ display: showError ? "block" : "none" }}
         >
           <div>
             <svg
@@ -276,7 +291,7 @@ export default function Login() {
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span>{accountStateMessage}</span>
+            <span>{alertMessage}</span>
           </div>
         </div>
       </div>

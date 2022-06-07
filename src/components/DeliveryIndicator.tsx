@@ -38,15 +38,6 @@ export default function DeliveryIndicator(props: DeliveryIndicatorProps) {
           className="indicator-item indicator-bottom badge p-0"
           title="delivering..."
         >
-          {/* <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="white"
-          >
-            <path d="M12 0c-6.623 0-12 5.377-12 12s5.377 12 12 12 12-5.377 12-12-5.377-12-12-12zm0 22c-5.519 0-10-4.48-10-10 0-5.519 4.481-10 10-10 5.52 0 10 4.481 10 10 0 5.52-4.48 10-10 10z" />
-          </svg> */}
           <BeatLoader color="#ffffff" loading={true} size = {3}/>
         </span>
       );
