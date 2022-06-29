@@ -6,6 +6,7 @@ import Login from './components/Login';
 import Messages from './components/Messages';
 import Profile from './components/Profile';
 import { CreateAccount } from './components/CreateAccount';
+import Help from './components/Help';
 
 
 const root = ReactDOM.createRoot(
