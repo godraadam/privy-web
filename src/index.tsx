@@ -7,6 +7,7 @@ import Messages from './components/Messages';
 import Profile from './components/Profile';
 import { CreateAccount } from './components/CreateAccount';
 
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
@@ -18,6 +19,7 @@ root.render(
       <Route path="messages" element={<Messages />} />
       <Route path="profile" element={<Profile />} />
       <Route path="register" element={<CreateAccount />} />
+      <Route path="help" element={<Help />} />
     </Routes>
   </BrowserRouter>
 );
