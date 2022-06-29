@@ -15,8 +15,8 @@
     "@types/react-router-dom": "^5.3.3",
     "axios": "^0.27.2",
     "daisyui": "^2.15.0",
-    "electron-squirrel-startup": "^1.0.0",
     "emoji-picker-react": "^3.5.1",
+    "file-saver": "^2.0.5",
     "react": "^18.1.0",
     "react-daisyui": "^2.0.2",
     "react-dom": "^18.1.0",
@@ -34,10 +34,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "electron:build": "electron-builder -c.extraMetadata.main=build/static/js/main.fd60647e.js",
-    "electron:start": "electron .",
-    "make": "react-scripts build && electron-forge make"
+    "eject": "react-scripts eject"
   },
   "build": {
     "extends": null,
@@ -71,11 +68,8 @@
     ]
   },
   "devDependencies": {
+    "@types/file-saver": "^2.0.5",
     "autoprefixer": "^10.4.7",
-    "electron": "^19.0.3",
-    "electron-builder": "^23.0.3",
-    "electron-forge": "^5.2.4",
-    "electron-prebuilt-compile": "^8.2.0",
     "postcss": "^8.4.14",
     "tailwindcss": "^3.0.24"
   },
