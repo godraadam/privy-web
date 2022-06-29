@@ -35,7 +35,9 @@ export default function Login() {
         console.log(error);
         if (axios.isAxiosError(error)) {
           if (error.code === "ERR_NETWORK") {
-            displayError("Privy Router is not accessible! Check if it is up and running first.")
+            displayError(
+              "Privy Router is not accessible! Check if it is up and running first."
+            );
           }
         }
       }
@@ -68,7 +70,7 @@ export default function Login() {
         `${routerApiUrl}/auth/login`,
         {
           username: username,
-          password: password,
+          mnemonic: password,
         },
         { validateStatus: (status) => true }
       );
@@ -97,44 +99,18 @@ export default function Login() {
 
   async function onAddAccount() {
     try {
-      const res = await axios.post(`${routerApiUrl}/account/add`, {
-        username: username,
-        password: password,
-      });
+      const res = await trackPromise(
+        axios.post(`${routerApiUrl}/account/add`, {
+          username: username,
+          mnemonic: password,
+        })
+      );
       switch (res.status) {
         case 200:
           displaySuccess("Account has been imported successfully!");
           setUsername("");
           setPassword("");
           await fetchAccounts();
-          break;
-        default:
-          displayError("Something went wrong, try again later!");
-      }
-    } catch (error) {
-      displayError("Something went wrong, try again later!");
-    }
-  }
-
-  async function onCreateAccount() {
-    try {
-      const res = await trackPromise(
-        axios.post(`${routerApiUrl}/account/create`, {
-          username: username,
-          password: password,
-        })
-      );
-      switch (res.status) {
-        case 200:
-          displaySuccess("Account has been created successfully!");
-          setUsername("");
-          setPassword("");
-          await fetchAccounts();
-          break;
-        case 409:
-          displayError(
-            "An account with this username already exists on this device!"
-          );
           break;
         default:
           displayError("Something went wrong, try again later!");
@@ -158,21 +134,22 @@ export default function Login() {
     setTimeout(() => setShowSuccess(false), 4000);
   }
 
-  function validatePassword() {
-    const passwordRegEx = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$/;
-    return !!password.match(passwordRegEx);
-  }
-  
   const handleKeypress = (e: KeyboardEvent) => {
     if (e.code === "Enter") {
-      if (localUsers.map((user) => user.username).includes(username) && password.length > 0) {
+      if (
+        localUsers.map((user) => user.username).includes(username) &&
+        password.length > 0
+      ) {
         onLogin();
       }
     }
   };
 
   return (
-    <div className="flex flex-col bg-gradient-to-b from-black to-stone-800 min-h-screen" onKeyUp={handleKeypress}>
+    <div
+      className="flex flex-col bg-gradient-to-b from-black to-stone-800 min-h-screen"
+      onKeyUp={handleKeypress}
+    >
       <LoginNavbar />
       <div className="flex justify-center space-x-3 pt-20">
         {localUsers.length > 0 ? (
@@ -230,28 +207,24 @@ export default function Login() {
             <></>
           )}
           {!localUsers.map((user) => user.username).includes(username) ? (
-            <>
-              <button
-                className="btn hover:bg-white text-black bg-stone-400"
-                disabled={!(username.length > 0 && validatePassword())}
-                onClick={onAddAccount}
-                style={{ display: !promiseInProgress ? "block" : "none" }}
-              >
-                Import account
-              </button>
-              <button
-                className="btn hover:bg-white text-black bg-stone-400"
-                disabled={!(username.length > 0 && validatePassword())}
-                onClick={onCreateAccount}
-                style={{ display: !promiseInProgress ? "block" : "none" }}
-              >
-                Create account
-              </button>
-            </>
+            <button
+              className="btn hover:bg-white text-black bg-stone-400"
+              disabled={!(username.length > 0)}
+              onClick={onAddAccount}
+              style={{ display: !promiseInProgress ? "block" : "none" }}
+            >
+              Import account
+            </button>
           ) : (
             <></>
           )}
         </div>
+        <button
+          className="text-center underline"
+          onClick={() => navigate("/register")}
+        >
+          Create new account
+        </button>
         <div
           className="alert alert-success shadow-lg "
           style={{ display: showSuccess ? "block" : "none" }}

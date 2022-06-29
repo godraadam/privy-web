@@ -14,9 +14,9 @@ export default function Profile() {
   );
   const [editingAlias, setEditingAlias] = useState(false);
   const [newAlias, setNewAlias] = useState(searchParams.get("username") ?? "");
-  
+
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     (async () => {
       try {
@@ -49,14 +49,16 @@ export default function Profile() {
       console.error(error);
     }
   }
-  
+
   async function onDeleteConversationClicked() {
     const alias = searchParams.get("username");
     if (!alias) {
       return;
     }
     try {
-      const res = await axios.delete(`${routerApiUrl}/message/rm/all-with/${alias}`);
+      const res = await axios.delete(
+        `${routerApiUrl}/message/rm/all-with/${alias}`
+      );
       navigate("/messages");
     } catch (error) {
       console.error(error);
@@ -166,7 +168,7 @@ export default function Profile() {
                     Delete contact:
                   </h2>
                   <label htmlFor="my-modal" className="modal-button">
-                  <svg
+                    <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="20"
                       height="20"
@@ -220,7 +222,12 @@ export default function Profile() {
       <input type="checkbox" id="my-modal" className="modal-toggle" />
       <div className="modal ">
         <div className="modal-box bg-stone-800 shadow-xl">
-          <label htmlFor="my-modal" className="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
+          <label
+            htmlFor="my-modal"
+            className="btn btn-sm btn-circle absolute right-2 top-2"
+          >
+            ✕
+          </label>
           <h3 className="font-bold text-lg text-red-500">Delete contact</h3>
           <p className="py-4">
             {`Are you sure you want to remove ${
@@ -228,10 +235,18 @@ export default function Profile() {
             } from your contact list? By default this will not delete the conversation, only the contact. Deleted conversations cannot be restored!`}
           </p>
           <div className="modal-action">
-            <label htmlFor="my-modal" className="btn btn-sm" onClick={onDeleteContactClicked}>
+            <label
+              htmlFor="my-modal"
+              className="btn btn-sm"
+              onClick={onDeleteContactClicked}
+            >
               Delete contact
             </label>
-            <label htmlFor="my-modal" className="btn btn-error btn-sm" onClick={onDeleteConversationClicked}>
+            <label
+              htmlFor="my-modal"
+              className="btn btn-error btn-sm"
+              onClick={onDeleteConversationClicked}
+            >
               Delete conversation
             </label>
           </div>
