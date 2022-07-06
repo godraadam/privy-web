@@ -5,6 +5,7 @@ import LoginNavbar from "./LoginNavbar";
 import { trackPromise, usePromiseTracker } from "react-promise-tracker";
 import { useNavigate } from "react-router-dom";
 import {saveAs} from "file-saver"
+import LoadingIndicator from "./LoadingIndicator";
 
 export const CreateAccount = () => {
   const [username, setUsername] = useState("");
@@ -145,6 +146,7 @@ export const CreateAccount = () => {
             <span>{alertMessage}</span>
           </div>
         </div>
+        <LoadingIndicator width={200} />
         <div
           className="alert alert-error shadow-lg"
           style={{ display: showError ? "block" : "none" }}

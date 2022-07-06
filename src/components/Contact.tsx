@@ -15,7 +15,7 @@ export default function Contact(props: ContactProps) {
     navigate(
       `/profile/?username=${props.contact.alias}&pubkey=${encodeURIComponent(
         props.contact.pubkey
-      )}&contact=true&trusted=${props.contact.trusted}`
+      )}&contact=true&trusted=${props.contact.trusted}&proxy=${props.contact.proxy}`
     );
   }
 
