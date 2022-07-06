@@ -78,6 +78,8 @@ export default function Login() {
         case 200:
           displaySuccess(`Logged in as ${username}!`);
           localStorage.setItem("username", username);
+          localStorage.setItem("password", password);
+
           navigate("/messages");
           break;
         case 404:
@@ -155,13 +157,13 @@ export default function Login() {
         {localUsers.length > 0 ? (
           localUsers.map((user, index) => {
             return (
-              <div className="avatar placeholder" key={index}>
-                <div className="bg-stone-200 text-black rounded-full w-24">
+              <div className="text-center px-2 placeholder" key={index}>
+                <div className="bg-stone-300 text-stone-800 rounded-xl w-24 p-3">
                   <button
-                    className="text-3xl"
+                    className="text-2xl"
                     onClick={() => onAccountSelected(index)}
                   >
-                    {user.username[0]}
+                    {user.username}
                   </button>
                 </div>
               </div>

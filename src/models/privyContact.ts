@@ -3,5 +3,6 @@ export interface PrivyContact {
     pubkey: string;
     address: string;
     trusted: boolean;
+    proxy: boolean,
     hash?: string;
   }
